@@ -9,17 +9,16 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.spring.injection.annot.SpringBean;
-
-import java.util.function.Consumer;
+import org.danekja.java.util.function.serializable.SerializableConsumer;
 
 public class TaskPanel extends Panel {
 
     @SpringBean
     private TaskService taskService;
 
-    private final Consumer<AjaxRequestTarget> refreshCallback;
+    private final SerializableConsumer<AjaxRequestTarget> refreshCallback;
 
-    public TaskPanel(String id, IModel<Task> taskModel, Consumer<AjaxRequestTarget> refreshCallback) {
+    public TaskPanel(String id, IModel<Task> taskModel, SerializableConsumer<AjaxRequestTarget> refreshCallback) {
         super(id, taskModel);
         this.refreshCallback = refreshCallback;
 

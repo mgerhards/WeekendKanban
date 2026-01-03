@@ -15,7 +15,7 @@ import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.LoadableDetachableModel;
-i
+
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.spring.injection.annot.SpringBean;
 
@@ -37,14 +37,17 @@ public class ColumnPanel extends Panel {
         tasksContainer.setOutputMarkupId(true);
         add(tasksContainer);
 
-        var tasksModel = LoadableDetachableModel.of(() -> 
-            taskService.findByStatus(statusModel.getObject())
-        );
+        IModel<java.util.List<Task>> tasksModel = new LoadableDetachableModel<>() {
+            @Override
+            protected java.util.List<Task> load() {
+                return taskService.findByStatus(statusModel.getObject());
+            }
+        };
 
         tasksContainer.add(new ListView<>("tasks", tasksModel) {
             @Override
             protected void populateItem(ListItem<Task> item) {
-                item.add(new TaskPanel("task", item.getModel(), ColumnPanel.this::refreshTasks));
+                item.add(new TaskPanel("task", item.getModel(), target -> refreshTasks(target)));
             }
         });
 
