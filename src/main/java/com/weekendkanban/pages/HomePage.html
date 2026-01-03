@@ -9,9 +9,21 @@
     <div class="container mt-4">
         <h1 class="mb-4">WeekendKanban</h1>
         <div class="row">
-            <div wicket:id="todoColumn"></div>
-            <div wicket:id="inProgressColumn"></div>
-            <div wicket:id="doneColumn"></div>
+            <div class="container-fluid py-3">
+    <div class="row g-3">
+      <div class="col-12 col-md-4">
+        <div wicket:id="todoColumn"></div>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <div wicket:id="doingColumn"></div>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <div wicket:id="doneColumn"></div>
+      </div>
+    </div>
+  </div>
         </div>
     </div>
 </body>

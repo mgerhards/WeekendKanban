@@ -1,8 +1,18 @@
 <wicket:panel>
-    <div class="card mb-2">
-        <div class="card-body">
-            <h5 class="card-title" wicket:id="title">Task Title</h5>
-            <p class="card-text" wicket:id="description">Description</p>
+<div class="card">
+    <div class="card-body p-2">
+      <div class="d-flex justify-content-between align-items-start gap-2">
+        <div class="flex-grow-1">
+          <div class="fw-semibold" wicket:id="title"></div>
+          <div class="small text-secondary" wicket:id="description"></div>
         </div>
+
+        <div class="btn-group btn-group-sm">
+          <a class="btn btn-outline-secondary" wicket:id="moveLeft">←</a>
+          <a class="btn btn-outline-secondary" wicket:id="moveRight">→</a>
+          <a class="btn btn-outline-danger" wicket:id="delete">✕</a>
+        </div>
+      </div>
     </div>
+  </div>
 </wicket:panel>
