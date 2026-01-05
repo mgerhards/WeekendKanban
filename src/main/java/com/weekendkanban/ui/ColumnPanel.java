@@ -24,33 +24,21 @@ public class ColumnPanel extends Panel {
     @SpringBean
     private TaskService taskService;
 
-    private final WebMarkupContainer tasksContainer;
+    private WebMarkupContainer tasksContainer;
     private String newTaskTitle;
 
     public ColumnPanel(String id, IModel<TaskStatus> statusModel) {
         super(id, statusModel);
+        setOutputMarkupId(true);
 
-        add(new Label("columnTitle", statusModel.map(TaskStatus::name)));
+        addLabel(statusModel);
+        addTasksContainer(statusModel);
+       
 
-        // Container for AJAX refresh
-        tasksContainer = new WebMarkupContainer("tasksContainer");
-        tasksContainer.setOutputMarkupId(true);
-        add(tasksContainer);
+        addNewTaskForm(statusModel);
+    }
 
-        IModel<java.util.List<Task>> tasksModel = new LoadableDetachableModel<>() {
-            @Override
-            protected java.util.List<Task> load() {
-                return taskService.findByStatus(statusModel.getObject());
-            }
-        };
-
-        tasksContainer.add(new ListView<>("tasks", tasksModel) {
-            @Override
-            protected void populateItem(ListItem<Task> item) {
-                item.add(new TaskPanel("task", item.getModel(), target -> refreshTasks(target)));
-            }
-        });
-
+    private void addNewTaskForm(IModel<TaskStatus> statusModel) {
         // Add task form
         Form<Void> addForm = new Form<>("addForm");
         addForm.setOutputMarkupId(true);
@@ -74,8 +62,40 @@ public class ColumnPanel extends Panel {
         });
     }
 
+    private void addTasksContainer(IModel<TaskStatus> statusModel) {
+        tasksContainer = new WebMarkupContainer("tasksContainer");
+        tasksContainer.setOutputMarkupId(true);
+        add(tasksContainer);
+
+        IModel<java.util.List<Task>> tasksModel = new LoadableDetachableModel<>() {
+            @Override
+            protected java.util.List<Task> load() {
+                return taskService.findByStatus(statusModel.getObject());
+            }
+        };
+
+        ListView<Task> tasksListView = new ListView<>("tasksList", tasksModel) {
+            @Override
+            protected void populateItem(ListItem<Task> item) {
+                item.add(new TaskPanel("taskPanel", item.getModel(), ColumnPanel.this::refreshTasks));
+            }
+        };
+        tasksListView.setOutputMarkupId(true);
+        tasksContainer.add(tasksListView);
+    }
+
+    private void addLabel(IModel<TaskStatus> statusModel) {
+        add(new Label("columnTitle", statusModel.map(TaskStatus::name)));
+    }
+
+    @Override
+    protected void onInitialize() {
+        super.onInitialize();
+    }
+
     public void refreshTasks(AjaxRequestTarget target) {
         // Force the model to reload from database
+        System.out.println("Refreshing tasks for column: " + getId());
         tasksContainer.modelChanged();
         target.add(tasksContainer);
     }
