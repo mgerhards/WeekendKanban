@@ -3,6 +3,9 @@ package com.weekendkanban.ui;
 import com.weekendkanban.domain.Task;
 import com.weekendkanban.domain.TaskStatus;
 import com.weekendkanban.service.TaskService;
+
+import java.util.List;
+
 import org.apache.wicket.ajax.AjaxRequestTarget;
 
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
@@ -26,6 +29,7 @@ public class ColumnPanel extends Panel {
 
     private WebMarkupContainer tasksContainer;
     private String newTaskTitle;
+    private ListView<Task> tasksListView;
 
     public ColumnPanel(String id, IModel<TaskStatus> statusModel) {
         super(id, statusModel);
@@ -34,7 +38,6 @@ public class ColumnPanel extends Panel {
         addLabel(statusModel);
         addTasksContainer(statusModel);
        
-
         addNewTaskForm(statusModel);
     }
 
@@ -74,10 +77,10 @@ public class ColumnPanel extends Panel {
             }
         };
 
-        ListView<Task> tasksListView = new ListView<>("tasksList", tasksModel) {
+        tasksListView = new ListView<>("tasks", tasksModel) {
             @Override
             protected void populateItem(ListItem<Task> item) {
-                item.add(new TaskPanel("taskPanel", item.getModel(), ColumnPanel.this::refreshTasks));
+                item.add(new TaskPanel("task", item.getModel(), ColumnPanel.this::refreshTasks));
             }
         };
         tasksListView.setOutputMarkupId(true);
@@ -95,8 +98,8 @@ public class ColumnPanel extends Panel {
 
     public void refreshTasks(AjaxRequestTarget target) {
         // Force the model to reload from database
-        System.out.println("Refreshing tasks for column: " + getId());
-        tasksContainer.modelChanged();
+        System.out.println("Refreshing tasks for column: " + getId());        
+        tasksListView.getModel().detach();
         target.add(tasksContainer);
     }
 }
