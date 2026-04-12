@@ -31,4 +31,17 @@ public class TaskService {
     public Task findById(Long id) {
         return taskRepository.findById(id).orElseThrow();
     }
+
+    public long countOpenTasks() {
+        return taskRepository.countByStatus(TaskStatus.TODO)
+             + taskRepository.countByStatus(TaskStatus.IN_PROGRESS);
+    }
+
+    public long countClosedTasks() {
+        return taskRepository.countByStatus(TaskStatus.DONE);
+    }
+
+    public long countAllTasks() {
+        return taskRepository.count();
+    }
 }
