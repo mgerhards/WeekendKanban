@@ -13,6 +13,7 @@ public class InfoPanel extends Panel {
 
     public InfoPanel(String id) {
         super(id);
+        setOutputMarkupId(true);
 
         add(new Label("count_open",
                 LoadableDetachableModel.of(() -> taskService.countOpenTasks())));

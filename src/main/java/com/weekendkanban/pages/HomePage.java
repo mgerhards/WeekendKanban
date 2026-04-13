@@ -11,8 +11,9 @@ public class HomePage extends BasePage {
 
     public HomePage() {
         add(new InfoPanel("infoPanel"));
-        add(new ColumnPanel("todoColumn", Model.of(TaskStatus.TODO)));
-        add(new ColumnPanel("doingColumn", Model.of(TaskStatus.IN_PROGRESS)));
-        add(new ColumnPanel("doneColumn", Model.of(TaskStatus.DONE)));
+
+        add(new ColumnPanel("todoColumn",  Model.of(TaskStatus.TODO),        target -> target.add(get("infoPanel"))));
+        add(new ColumnPanel("doingColumn", Model.of(TaskStatus.IN_PROGRESS), target -> target.add(get("infoPanel"))));
+        add(new ColumnPanel("doneColumn",  Model.of(TaskStatus.DONE),        target -> target.add(get("infoPanel"))));
     }
 }

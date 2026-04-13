@@ -9,6 +9,7 @@ import java.util.List;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
+import org.danekja.java.util.function.serializable.SerializableConsumer;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
@@ -30,9 +31,11 @@ public class ColumnPanel extends Panel {
     private WebMarkupContainer tasksContainer;
     private String newTaskTitle;
     private ListView<Task> tasksListView;
+    private final SerializableConsumer<AjaxRequestTarget> onRefresh;
 
-    public ColumnPanel(String id, IModel<TaskStatus> statusModel) {
+    public ColumnPanel(String id, IModel<TaskStatus> statusModel, SerializableConsumer<AjaxRequestTarget> onRefresh) {
         super(id, statusModel);
+        this.onRefresh = onRefresh;
         setOutputMarkupId(true);
 
         addLabel(statusModel);
@@ -59,7 +62,8 @@ public class ColumnPanel extends Panel {
                     task.setStatus(statusModel.getObject());
                     taskService.save(task);
                     newTaskTitle = null;
-                    target.add(tasksContainer, addForm);
+                    target.add(addForm);
+                    refreshTasks(target);
                 }
             }
         });
@@ -98,8 +102,9 @@ public class ColumnPanel extends Panel {
 
     public void refreshTasks(AjaxRequestTarget target) {
         // Force the model to reload from database
-        System.out.println("Refreshing tasks for column: " + getId());        
+        System.out.println("Refreshing tasks for column: " + getId());
         tasksListView.getModel().detach();
         target.add(tasksContainer);
+        onRefresh.accept(target);
     }
 }
