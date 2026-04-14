@@ -76,7 +76,8 @@ public class TaskPanel extends Panel {
     private TaskStatus getNextStatus(TaskStatus current) {
         return switch (current) {
             case TODO -> TaskStatus.IN_PROGRESS;
-            case IN_PROGRESS -> TaskStatus.DONE;
+            case IN_PROGRESS -> TaskStatus.IN_REVIEW;
+            case IN_REVIEW-> TaskStatus.DONE;
             case DONE -> null;
         };
     }
@@ -85,7 +86,8 @@ public class TaskPanel extends Panel {
         return switch (current) {
             case TODO -> null;
             case IN_PROGRESS -> TaskStatus.TODO;
-            case DONE -> TaskStatus.IN_PROGRESS;
+            case IN_REVIEW -> TaskStatus.IN_PROGRESS;
+            case DONE -> TaskStatus.IN_REVIEW;
         };
     }
 
