@@ -24,6 +24,8 @@ public class Task {
 
     private int position;  // For ordering within a column
 
+    private String assignee; // Optional field to assign a task to a user
+
     public Task(String title) {
         this.title = title;
     }

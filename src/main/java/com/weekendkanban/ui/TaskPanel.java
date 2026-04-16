@@ -5,9 +5,13 @@ import com.weekendkanban.domain.TaskStatus;
 import com.weekendkanban.service.TaskService;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.spring.injection.annot.SpringBean;
 import org.danekja.java.util.function.serializable.SerializableConsumer;
 
@@ -22,8 +26,37 @@ public class TaskPanel extends Panel {
         super(id, taskModel);
         this.refreshCallback = refreshCallback;
 
-        add(new Label("title", taskModel.map(Task::getTitle)));
-        add(new Label("description", taskModel.map(Task::getDescription)));
+        createView(taskModel, refreshCallback);
+
+        WebMarkupContainer container = new WebMarkupContainer("editContainer");
+        container.setOutputMarkupId(true);
+        container.setOutputMarkupPlaceholderTag(true);
+        container.setVisible(false);
+        add(container);
+
+        var editForm = new Form<Task>("editForm", taskModel) {
+            @Override
+            protected void onSubmit() {
+                Task task = taskModel.getObject();
+                taskService.save(task);
+                refreshCallback.accept(null);
+            }
+        };
+        editForm.add(new TextField("editTitle", new PropertyModel(taskModel, "title")));
+        editForm.add(new TextField("editDescription", new PropertyModel(taskModel, "description")));
+        editForm.add(new TextField("editAssignee", new PropertyModel(taskModel, "assignee")));
+        container.add(editForm);
+    }
+
+    private void createView(IModel<Task> taskModel, SerializableConsumer<AjaxRequestTarget> refreshCallback) {
+        WebMarkupContainer container = new WebMarkupContainer("viewContainer");
+        container.setOutputMarkupId(true);
+        container.setOutputMarkupPlaceholderTag(true);
+        add(container);
+
+        container.add(new Label("title", taskModel.map(Task::getTitle)));
+        container.add(new Label("description", taskModel.map(Task::getDescription)));
+        container.add(new Label("assignee", taskModel.map(Task::getAssignee)));
 
         // Move left button
         add(new AjaxLink<Void>("moveLeft") {
