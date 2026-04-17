@@ -3,11 +3,14 @@ package com.weekendkanban.ui;
 import com.weekendkanban.domain.Task;
 import com.weekendkanban.domain.TaskStatus;
 import com.weekendkanban.service.TaskService;
+import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
@@ -26,40 +29,69 @@ public class TaskPanel extends Panel {
         super(id, taskModel);
         this.refreshCallback = refreshCallback;
 
-        createView(taskModel, refreshCallback);
+        WebMarkupContainer viewPanel = createView(taskModel, refreshCallback);
 
         WebMarkupContainer container = new WebMarkupContainer("editContainer");
         container.setOutputMarkupId(true);
         container.setOutputMarkupPlaceholderTag(true);
         container.setVisible(false);
-        add(container);
 
-        var editForm = new Form<Task>("editForm", taskModel) {
+        viewPanel.add(new AjaxEventBehavior("click") {
             @Override
-            protected void onSubmit() {
+            public void onEvent(AjaxRequestTarget target) {
+                get("viewContainer").setVisible(false);
+                get("editContainer").setVisible(true);
+                target.add(get("viewContainer"));
+                target.add(get("editContainer"));
+            }
+        });
+
+
+        var editForm = new Form<Task>("editForm", taskModel);
+
+        editForm.add(new AjaxButton("saveChanges", editForm) {
+            @Override
+            protected void onSubmit(AjaxRequestTarget target) {
                 Task task = taskModel.getObject();
                 taskService.save(task);
-                refreshCallback.accept(null);
+                container.setVisible(false);
+                viewPanel.setVisible(true);
+                target.add(container);
+                target.add(viewPanel);
+                refreshCallback.accept(target);
             }
-        };
+        });
+
         editForm.add(new TextField("editTitle", new PropertyModel(taskModel, "title")));
-        editForm.add(new TextField("editDescription", new PropertyModel(taskModel, "description")));
+        editForm.add(new TextArea("editDescription", new PropertyModel(taskModel, "description")));
         editForm.add(new TextField("editAssignee", new PropertyModel(taskModel, "assignee")));
+
+        editForm.add(new AjaxLink<Void>("cancelEdit") {
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                container.setVisible(false);
+                viewPanel.setVisible(true);
+                target.add(container);
+                target.add(viewPanel);
+            }
+        });
+
+        add(container);
         container.add(editForm);
+        add(viewPanel);
     }
 
-    private void createView(IModel<Task> taskModel, SerializableConsumer<AjaxRequestTarget> refreshCallback) {
+    private WebMarkupContainer createView(IModel<Task> taskModel, SerializableConsumer<AjaxRequestTarget> refreshCallback) {
         WebMarkupContainer container = new WebMarkupContainer("viewContainer");
         container.setOutputMarkupId(true);
         container.setOutputMarkupPlaceholderTag(true);
-        add(container);
 
         container.add(new Label("title", taskModel.map(Task::getTitle)));
         container.add(new Label("description", taskModel.map(Task::getDescription)));
         container.add(new Label("assignee", taskModel.map(Task::getAssignee)));
 
         // Move left button
-        add(new AjaxLink<Void>("moveLeft") {
+        container.add(new AjaxLink<Void>("moveLeft") {
             @Override
             public void onClick(AjaxRequestTarget target) {
                 Task task = taskModel.getObject();
@@ -78,7 +110,7 @@ public class TaskPanel extends Panel {
         });
 
         // Move right button
-        add(new AjaxLink<Void>("moveRight") {
+        container.add(new AjaxLink<Void>("moveRight") {
             @Override
             public void onClick(AjaxRequestTarget target) {
                 Task task = taskModel.getObject();
@@ -97,13 +129,16 @@ public class TaskPanel extends Panel {
         });
 
         // Delete button
-        add(new AjaxLink<Void>("delete") {
+        container.add(new AjaxLink<Void>("delete") {
             @Override
             public void onClick(AjaxRequestTarget target) {
                 taskService.delete(taskModel.getObject().getId());
                 refreshCallback.accept(target);
             }
         });
+
+
+        return container;
     }
 
     private TaskStatus getNextStatus(TaskStatus current) {
